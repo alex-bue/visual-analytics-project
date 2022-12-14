@@ -13,6 +13,7 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
         path_j = path_i + j[0]
         year = j[1]
         if year != 2022:
+        # ToDO: Date format
             for k in [['quarter=1/', '01'], ['quarter=2/', '04'], ['quarter=3/', '07'], ['quarter=4/', '10']]:
                 path_k = path_j + k[0]
                 month = k[1]
@@ -47,9 +48,10 @@ df = df.drop(columns=['rest', 'tile', 'quadkey'])
 
 # retrieve country from lat-long data
 geolocator = Nominatim(user_agent="geoapiExercises")
+# ToDo: use np.vectorize
 df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long'])), axis=1)
 # df['location'] = df.apply(lambda x: str(x['lat'])+','+str(x['long']), axis=1)
 df['country'] = df['location'].apply(lambda x: x.raw['address'])
 df['country'] = df['country'].apply(lambda x: x.get('country', np.nan))
-
+# ToDo: add country filtering
 print()
