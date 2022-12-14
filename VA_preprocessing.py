@@ -4,6 +4,7 @@ from geopy.geocoders import Nominatim
 from geopy.point import Point
 import datetime as dt
 
+start = dt.now()
 # read in all single files and concatenate them
 # path = '../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
 # df = pd.DataFrame()
@@ -75,6 +76,6 @@ df_europe.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_europe.cs
 df_germany = df_europe[df_europe['country'] == 'Germany']
 df_germany.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_germany.csv', sep=",")
 
-print()
+print("Successful execution in " + (dt.now()-start + " seconds")
 
 
