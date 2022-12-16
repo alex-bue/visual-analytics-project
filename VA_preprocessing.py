@@ -4,6 +4,21 @@ from geopy.geocoders import Nominatim
 from geopy.point import Point
 import datetime as dt
 
+
+def retrieve_address(x):
+    try:
+        return x.raw['address']
+    except AttributeError:
+        return np.nan
+
+
+def get_country(x):
+    try:
+        return x.get('country', np.nan)
+    except AttributeError:
+        return np.nan
+
+
 start = dt.datetime.now()
 # read in all single files and concatenate them
 path = '../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
@@ -14,28 +29,21 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
     for j in [['year=2019/', 2019], ['year=2020/', 2020], ['year=2021/', 2021], ['year=2022/', 2022]]:
         path_j = path_i + j[0]
         year = j[1]
+        quarter_list = []
         if year != 2022:
-            for k in [['quarter=1/', '01'], ['quarter=2/', '04'], ['quarter=3/', '07'], ['quarter=4/', '10']]:
-                path_k = path_j + k[0]
-                month = k[1]
-                path_k = path_k + str(year)+"-"+month+"-01_performance_"+str(category)+"_tiles.parquet"
-                test_raw = pd.read_parquet(path_k, engine='pyarrow')
-                test_short = test_raw.head().copy()
-                # add year, month and category information to the dataframe - those are
-                test_short['quarter'] = dt.date(year, int(month), 1)
-                test_short['category'] = category
-                df = pd.concat([df, test_short])
+            quarter_list = [['quarter=1/', '01'], ['quarter=2/', '04'], ['quarter=3/', '07'], ['quarter=4/', '10']]
         elif year == 2022:
-            for k in [['quarter=1/', '01'], ['quarter=2/', '04'], ['quarter=3/', '07']]:
-                path_k = path_j + k[0]
-                month = k[1]
-                path_k = path_k + str(year) + "-" + month + "-01_performance_" + str(category) + "_tiles.parquet"
-                test_raw = pd.read_parquet(path_k, engine='pyarrow')
-                test_short = test_raw.head().copy()
-                # add year, month and category information to the dataframe - those are
-                test_short['quarter'] = dt.date(year, int(month), 1)
-                test_short['category'] = category
-                df = pd.concat([df, test_short])
+            quarter_list = [['quarter=1/', '01'], ['quarter=2/', '04'], ['quarter=3/', '07']]
+        for k in quarter_list:
+            path_k = path_j + k[0]
+            month = k[1]
+            path_k = path_k + str(year)+"-"+month+"-01_performance_"+str(category)+"_tiles.parquet"
+            df_raw = pd.read_parquet(path_k, engine='pyarrow')
+            # add year, month and category information to the dataframe -
+            # those are only in file names, not in the files itself
+            df_raw['quarter'] = dt.date(year, int(month), 1)
+            df_raw['category'] = category
+            df = pd.concat([df, df_raw])
 print("data read in completed in " + str(dt.datetime.now()-start))
 
 # df_raw = pd.read_parquet('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/type=fixed/'
@@ -58,8 +66,8 @@ df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long']
 
 print("geolocator.reverse function ready after " + str(dt.datetime.now()-start))
 
-df['country'] = df['location'].apply(lambda x: x.raw['address'])
-df['country'] = df['country'].apply(lambda x: x.get('country', np.nan))
+df['country'] = df['location'].apply(lambda x: retrieve_address(x))
+df['country'] = df['country'].apply(lambda x: get_country(x))
 
 print("data preparation ready after " + str(dt.datetime.now()-start))
 
@@ -70,8 +78,8 @@ df.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_whole_world.csv'
 print("whole world to csv after " + str(dt.datetime.now()-start))
 
 # get a list of all countries in geopy:
-#unique_countries = df['country'].unique()
-#unique_countries = np.sort(unique_countries)
+# unique_countries = df['country'].unique()
+# unique_countries = np.sort(unique_countries)
 # np.savetxt('../../Documents/Master/Semester1/Visual_Analytics/country_list.csv', unique_countries, delimiter=",")
 
 # filter for Europe:
@@ -88,5 +96,3 @@ df_germany = df_europe[df_europe['country'] == 'Germany']
 df_germany.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_germany.csv', sep=",")
 
 print("Successful execution in " + str(dt.datetime.now()-start))
-
-
