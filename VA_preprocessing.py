@@ -20,9 +20,10 @@ def get_country(x):
 
 
 start = dt.datetime.now()
+i = 0  # count iterations for runtime checks
 # read in all single files and concatenate them
 path = '../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
-df = pd.DataFrame()
+df_complete = pd.DataFrame()
 for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
     path_i = path + i[0]
     category = i[1]
@@ -38,42 +39,41 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             path_k = path_j + k[0]
             month = k[1]
             path_k = path_k + str(year)+"-"+month+"-01_performance_"+str(category)+"_tiles.parquet"
-            df_raw = pd.read_parquet(path_k, engine='pyarrow')
+            df = pd.read_parquet(path_k, engine='pyarrow')
             # add year, month and category information to the dataframe -
             # those are only in file names, not in the files itself
-            df_raw['quarter'] = dt.date(year, int(month), 1)
-            df_raw['category'] = category
-            df = pd.concat([df, df_raw])
+            df['quarter'] = dt.date(year, int(month), 1)
+            df['category'] = category
+
+            # retrieve lat-long data from tile column
+            df['tile'] = df['tile'].apply(lambda x: x.replace("POLYGON", ""))
+            df['tile'] = df['tile'].apply(lambda x: x.replace("(", ""))
+            df['tile'] = df['tile'].apply(lambda x: x.replace(")", ""))
+            df['tile'] = df['tile'].apply(lambda x: x.replace(",", ""))
+            df[['long', 'lat', 'rest']] = df['tile'].str.split(pat=" ", n=2, expand=True)
+            df = df.drop(columns=['rest', 'tile', 'quadkey'])
+
+            # retrieve country from lat-long data
+            geolocator = Nominatim(user_agent="geoapiExercises")
+            # ToDo: use np.vectorize
+            df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long'])), axis=1)
+            df['country'] = df['location'].apply(lambda x: retrieve_address(x))
+            df['country'] = df['country'].apply(lambda x: get_country(x))
+            df = df.drop(columns=['location'])
+
+            # concat the prepared dataset to the other prepared datasets
+            df_complete = pd.concat([df_complete, df])
+            i += 1
+            print(str(i) + " Datasets concatenated in " + str(dt.datetime.now()-start))
 print("data read in completed in " + str(dt.datetime.now()-start))
 
 # df_raw = pd.read_parquet('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/type=fixed/'
 #                          'year=2019/quarter=1/2019-01-01_performance_fixed_tiles.parquet', engine = 'pyarrow')
 # df = df_raw.head()
-# retrieve lat-long data from tile column
-df['tile'] = df['tile'].apply(lambda x: x.replace("POLYGON", ""))
-df['tile'] = df['tile'].apply(lambda x: x.replace("(", ""))
-df['tile'] = df['tile'].apply(lambda x: x.replace(")", ""))
-df['tile'] = df['tile'].apply(lambda x: x.replace(",", ""))
-df[['long', 'lat', 'rest']] = df['tile'].str.split(pat=" ", n=2, expand=True)
-df = df.drop(columns=['rest', 'tile', 'quadkey'])
-
-print("extraction of lat-long data ready after " + str(dt.datetime.now()-start))
-
-# retrieve country from lat-long data
-geolocator = Nominatim(user_agent="geoapiExercises")
-# ToDo: use np.vectorize
-df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long'])), axis=1)
-
-print("geolocator.reverse function ready after " + str(dt.datetime.now()-start))
-
-df['country'] = df['location'].apply(lambda x: retrieve_address(x))
-df['country'] = df['country'].apply(lambda x: get_country(x))
-
-print("data preparation ready after " + str(dt.datetime.now()-start))
 
 
 # save the whole dataset as csv:
-df.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_whole_world.csv', sep=",")
+df_complete.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_whole_world.csv', sep=",")
 
 print("whole world to csv after " + str(dt.datetime.now()-start))
 
@@ -86,7 +86,7 @@ print("whole world to csv after " + str(dt.datetime.now()-start))
 europe = pd.read_csv('../../Documents/Master/Semester1/Visual_Analytics/Europe_2.csv')
 europe = europe['Name'][:50].tolist()
 
-df_europe = df[df['country'].isin(europe)]
+df_europe = df_complete[df_complete['country'].isin(europe)]
 df_europe.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_europe.csv', sep=",")
 
 print("europe to csv after " + str(dt.datetime.now()-start))
