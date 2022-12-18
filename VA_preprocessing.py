@@ -53,9 +53,14 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             df[['long', 'lat', 'rest']] = df['tile'].str.split(pat=" ", n=2, expand=True)
             df = df.drop(columns=['rest', 'tile', 'quadkey'])
 
+            # filter lat-long of Europe
+            df['lat'] = df['lat'].astype('float64')
+            df['long'] = df['long'].astype('float64')
+            df = df[(df['lat'] > 28) & (df['lat'] < 75) & (df['long'] > -25) & (df['long'] < 70)]
+
             # retrieve country from lat-long data
             geolocator = Nominatim(user_agent="geoapiExercises")
-            # ToDo: use np.vectorize
+            # ToDo: use more efficient function
             df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long'])), axis=1)
             df['country'] = df['location'].apply(lambda x: retrieve_address(x))
             df['country'] = df['country'].apply(lambda x: get_country(x))
