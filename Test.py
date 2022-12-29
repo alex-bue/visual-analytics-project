@@ -1,28 +1,18 @@
 import pandas as pd
 import numpy as np
 import geopandas as gpd
-from shapely import Point
+from shapely import Point, Polygon, MultiPolygon
 # from geopy.geocoders import Nominatim
 # from geopy.point import Point
 import datetime as dt
+#%%
+# Test
+shapefile = gpd.read_file('/Users/alexander.buescher/Downloads/2022-01-01_performance_fixed_tiles/gps_fixed_tiles.shp', rows=5)
 
+shapefile
+#%%
+# Extracting Path and Building DataFrame
 
-def retrieve_address(x):
-    try:
-        return x.raw['address']
-    except AttributeError:
-        return np.nan
-
-
-def get_country(x):
-    try:
-        return x.get('country', np.nan)
-    except AttributeError:
-        return np.nan
-
-
-start = dt.datetime.now()
-i = 0  # count iterations for runtime checks
 # read in all single files and concatenate them
 path = './data/performance/'
 df_complete = pd.DataFrame()
@@ -45,7 +35,6 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             path_k = path_k + str(year)+"-"+month + \
                 "-01_performance_"+str(category)+"_tiles.parquet"
             df = pd.read_parquet(path_k, engine='pyarrow')
-            df = df.head()
             # add year, month and category information to the dataframe -
             # those are only in file names, not in the files itself
             df['quarter'] = dt.date(year, int(month), 1)
@@ -60,55 +49,39 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
                 pat=" ", n=2, expand=True)
             df = df.drop(columns=['rest', 'tile', 'quadkey'])
 
-            # filter lat-long of Europe
-            # df['lat'] = df['lat'].astype('float64')
-            # df['long'] = df['long'].astype('float64')
-            # df = df[(df['lat'] > 28) & (df['lat'] < 75) &
-            #         (df['long'] > -25) & (df['long'] < 70)]
+#%%
+# Shape and Head of DataFrame
+print(df.shape)
+df.head()
+#%%
+# Save to CSV as intemediary version
+df.to_csv('dataset-without-regions.csv')
+#%%
+# Convert to GeoDataFrame
+gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.long, df.lat))
+gdf.head()
+#%%
+# Reading shapefile with country boundaries
+gdf_shape = gpd.GeoDataFrame.from_file('./data/world-administrative-boundaries.shp')
+#%%
+# Merge DataFrames
+pointInPolys = gpd.sjoin(gdf, gdf_shape, how='left')
 
-            # retrieve country from lat-long data
-            # geolocator = Nominatim(user_agent="geoapiExercises")
-            # ToDo: use more efficient function
-            # df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long'])), axis=1)
-            # df['country'] = df['location'].apply(lambda x: retrieve_address(x))
-            # df['country'] = df['country'].apply(lambda x: get_country(x))
-            # df = df.drop(columns=['location'])
+# Print head
+pointInPolys.head()
 
-            # concat the prepared dataset to the other prepared datasets
-            # # df_complete = pd.concat([df_complete, df])
-            # # i += 1
-            # # print(str(i) + " Datasets concatenated in " +
-            #       str(dt.datetime.now()-start))
-# print("data read in completed in " + str(dt.datetime.now()-start))
+#%%
+# Drop columns we don't need
+pointInPolys = pointInPolys.drop(columns=['french_shor', 'status', 'index_right', 'color_code', 'status', 'continent'])
+#%%
+# Print "final" DF
+pointInPolys.head()
+#%%
+# Check NaNs
+print(pointInPolys['iso3'].isna().sum())
 
-# df_raw = pd.read_parquet('./data/performance/type=fixed/'
-#                          'year=2019/quarter=1/2019-01-01_performance_fixed_tiles.parquet', engine = 'pyarrow')
-# df = df_raw.head()
-
-
-# save the whole dataset as csv:
-# df_complete.to_csv('./data/performance/df_whole_world.csv', sep=",")
-
-# print("whole world to csv after " + str(dt.datetime.now()-start))
-
-# get a list of all countries in geopy:
-# unique_countries = df['country'].unique()
-# unique_countries = np.sort(unique_countries)
-# np.savetxt('./data/performance/country_list.csv', unique_countries, delimiter=",")
-
-# filter for Europe:
-# europe = pd.read_csv('./data/performance/Europe_2.csv')
-# europe = europe['Name'][:50].tolist()
-
-# df_europe = df_complete[df_complete['country'].isin(europe)]
-# df_europe.to_csv('./data/performance/df_europe.csv', sep=",")
-
-# print("europe to csv after " + str(dt.datetime.now()-start))
-
-# # filter for Germany
-# df_germany = df_europe[df_europe['country'] == 'Germany']
-# df_germany.to_csv('./data/performance/df_germany.csv', sep=",")
-
-# print("Successful execution in " + str(dt.datetime.now()-start))
-
-print(df)
+pointInPolys[pointInPolys.isnull().any(axis=1)]
+#%%
+# Realizing my mistakes (cry)
+for col in pointInPolys:
+    print(pointInPolys['quarter'].unique())

@@ -7,28 +7,43 @@ from shapely import Point
 import datetime as dt
 
 
-# def retrieve_address(x):
-#     try:
-#         return x.raw['address']
-#     except AttributeError:
-#         return np.nan
-#
-#
-# def get_country(x):
-#     try:
-#         return x.get('country', np.nan)
-#     except AttributeError:
-#         return np.nan
+def conduct_reverse_geocoding(df: pd.DataFrame, gdf_shape):
+    """
+    enriches the dataframe with the countries the long-lat data points are located in
+    :param df: the dataframe with the long-lat data
+    :param gdf_shape: shapefile with the country borders of the entire world
+    :return: df: original dataframe with additional country column
+    """
+    # convert df to GeoDataFrame
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.long, df.lat))
+
+    # Merge DataFrames
+    pointInPolys = gpd.sjoin(gdf, gdf_shape, how='left')
+
+    # Drop columns we don't need
+    pointInPolys = pointInPolys.drop(
+        columns=['french_shor', 'status', 'index_right', 'color_code', 'status', 'continent'])
+    return pointInPolys
 
 
 start = dt.datetime.now()
 i = 0  # count iterations for runtime checks
-# read in all single files and perform the necessary data preprocessing on them
+
+# Read in shapefile with country boundaries
+gdf_shape = gpd.GeoDataFrame.from_file('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
+                                       'world-administrative-boundaries/world-administrative-boundaries.shp')
+
+# read in country list of Europe
+europe = pd.read_csv('../../Documents/Master/Semester1/Visual_Analytics/Europe_2.csv')
+
+# the following nested for loops read in all single files and perform the necessary data preprocessing on them
 # for memory limitation reasons, the datasets will be combined to a shared dataset later
-path = '../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
+path = '../../Documents/Master/Semester1/Visual_Analytics/'
+path2 = 'Dashboard_Files/'
 # path = './data/performance/'
+
 for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
-    path_i = path + i[0]
+    path_i = path + path2 + i[0]
     category = i[1]
     for j in [['year=2019/', 2019], ['year=2020/', 2020], ['year=2021/', 2021], ['year=2022/', 2022]]:
         path_j = path_i + j[0]
@@ -43,7 +58,7 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             month = k[1]
             path_k = path_k + str(year)+"-"+month+"-01_performance_"+str(category)+"_tiles.parquet"
             df = pd.read_parquet(path_k, engine='pyarrow')
-            # df = df.head()
+            df = df.head()
 
             # add year, month and category information to the dataframe -
             # this information is only in file names, not in the files itself
@@ -59,45 +74,29 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             df = df.drop(columns=['rest', 'tile', 'quadkey'])
 
             # retrieve country from lat-long data (reverse geocoding)
-            geolocator = Nominatim(user_agent="geoapiExercises")
-            # ToDo: use more efficient function
-            df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long'])), axis=1)
-            df['country'] = df['location'].apply(lambda x: retrieve_address(x))
-            df['country'] = df['country'].apply(lambda x: get_country(x))
-            df = df.drop(columns=['location'])
+            df = conduct_reverse_geocoding(df, gdf_shape)
 
-            # concat the prepared dataset to the other prepared datasets
-            df_complete = pd.concat([df_complete, df])
+            # save final dataframe as csv
+            df.to_csv(path + f'preprocessed_files/whole_world/whole_world_{i}.csv', sep=';')
+
+            # filter for Europe:
+            europe = europe['Name'][:50].tolist()
+
+            # ToDo: adjust the column name for country and check which countries aren't written the same way
+
+            unique_countries = df['country'].unique()
+            unique_countries = pd.Series(unique_countries)
+            unique_countries.to_csv(path + 'unique_country_list.csv')
+
+            df_europe = df[df['country'].isin(europe)]
+            df_europe.to_csv(path + f'preprocessed_files/europe/europe_{i}.csv', sep=';')
+
+            print("europe to csv after " + str(dt.datetime.now() - start))
+
+            # filter for Germany
+            df_germany = df_europe[df_europe['country'] == 'Germany']
+            df_germany.to_csv(path + f'preprocessed_files/germany/germany_{i}.csv', sep=';')
+
             i += 1
-            print(str(i) + " Datasets concatenated in " + str(dt.datetime.now()-start))
-print("data read in completed in " + str(dt.datetime.now()-start))
-
-# df_raw = pd.read_parquet('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/type=fixed/'
-#                          'year=2019/quarter=1/2019-01-01_performance_fixed_tiles.parquet', engine = 'pyarrow')
-# df = df_raw.head()
-
-
-# save the whole dataset as csv:
-df_complete.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_whole_world.csv', sep=",")
-
-print("whole world to csv after " + str(dt.datetime.now()-start))
-
-# get a list of all countries in geopy:
-# unique_countries = df['country'].unique()
-# unique_countries = np.sort(unique_countries)
-# np.savetxt('../../Documents/Master/Semester1/Visual_Analytics/country_list.csv', unique_countries, delimiter=",")
-
-# filter for Europe:
-europe = pd.read_csv('../../Documents/Master/Semester1/Visual_Analytics/Europe_2.csv')
-europe = europe['Name'][:50].tolist()
-
-df_europe = df_complete[df_complete['country'].isin(europe)]
-df_europe.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_europe.csv', sep=",")
-
-print("europe to csv after " + str(dt.datetime.now()-start))
-
-# filter for Germany
-df_germany = df_europe[df_europe['country'] == 'Germany']
-df_germany.to_csv('../../Documents/Master/Semester1/Visual_Analytics/df_germany.csv', sep=",")
-
+            print(str(i) + " Datasets processed in " + str(dt.datetime.now()-start))
 print("Successful execution in " + str(dt.datetime.now()-start))
