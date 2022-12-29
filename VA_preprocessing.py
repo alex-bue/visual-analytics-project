@@ -40,6 +40,7 @@ europe = pd.read_csv('../../Documents/Master/Semester1/Visual_Analytics/Europe_2
 path = '../../Documents/Master/Semester1/Visual_Analytics/'
 path2 = 'Dashboard_Files/'
 # path = './data/performance/'
+# path2 = ''
 
 for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
     path_i = path + path2 + i[0]
