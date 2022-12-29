@@ -1,29 +1,32 @@
 import pandas as pd
 import numpy as np
-from geopy.geocoders import Nominatim
-from geopy.point import Point
+import geopandas as gpd
+from shapely import Point
+# from geopy.geocoders import Nominatim
+# from geopy.point import Point
 import datetime as dt
 
 
-def retrieve_address(x):
-    try:
-        return x.raw['address']
-    except AttributeError:
-        return np.nan
-
-
-def get_country(x):
-    try:
-        return x.get('country', np.nan)
-    except AttributeError:
-        return np.nan
+# def retrieve_address(x):
+#     try:
+#         return x.raw['address']
+#     except AttributeError:
+#         return np.nan
+#
+#
+# def get_country(x):
+#     try:
+#         return x.get('country', np.nan)
+#     except AttributeError:
+#         return np.nan
 
 
 start = dt.datetime.now()
 i = 0  # count iterations for runtime checks
-# read in all single files and concatenate them
+# read in all single files and perform the necessary data preprocessing on them
+# for memory limitation reasons, the datasets will be combined to a shared dataset later
 path = '../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
-df_complete = pd.DataFrame()
+# path = './data/performance/'
 for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
     path_i = path + i[0]
     category = i[1]
@@ -40,12 +43,14 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             month = k[1]
             path_k = path_k + str(year)+"-"+month+"-01_performance_"+str(category)+"_tiles.parquet"
             df = pd.read_parquet(path_k, engine='pyarrow')
+            # df = df.head()
+
             # add year, month and category information to the dataframe -
-            # those are only in file names, not in the files itself
+            # this information is only in file names, not in the files itself
             df['quarter'] = dt.date(year, int(month), 1)
             df['category'] = category
 
-            # retrieve lat-long data from tile column
+            # clean the location column, so that one latitude and one longitude value remain
             df['tile'] = df['tile'].apply(lambda x: x.replace("POLYGON", ""))
             df['tile'] = df['tile'].apply(lambda x: x.replace("(", ""))
             df['tile'] = df['tile'].apply(lambda x: x.replace(")", ""))
@@ -53,12 +58,7 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             df[['long', 'lat', 'rest']] = df['tile'].str.split(pat=" ", n=2, expand=True)
             df = df.drop(columns=['rest', 'tile', 'quadkey'])
 
-            # filter lat-long of Europe
-            df['lat'] = df['lat'].astype('float64')
-            df['long'] = df['long'].astype('float64')
-            df = df[(df['lat'] > 28) & (df['lat'] < 75) & (df['long'] > -25) & (df['long'] < 70)]
-
-            # retrieve country from lat-long data
+            # retrieve country from lat-long data (reverse geocoding)
             geolocator = Nominatim(user_agent="geoapiExercises")
             # ToDo: use more efficient function
             df['location'] = df.apply(lambda x: geolocator.reverse(Point(x['lat'], x['long'])), axis=1)
