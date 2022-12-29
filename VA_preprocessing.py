@@ -1,7 +1,6 @@
 import pandas as pd
-import numpy as np
 import geopandas as gpd
-from shapely import Point
+# from shapely import Point, Polygon, MultiPolygon
 # from geopy.geocoders import Nominatim
 # from geopy.point import Point
 import datetime as dt
