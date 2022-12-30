@@ -21,26 +21,28 @@ def conduct_reverse_geocoding(df: pd.DataFrame, gdf_shape):
 
     # Drop columns we don't need
     pointInPolys = pointInPolys.drop(
-        columns=['french_shor', 'status', 'index_right', 'color_code', 'status', 'continent'])
+        columns=['french_shor', 'status', 'index_right', 'color_code', 'status'])
     return pointInPolys
 
 
 start = dt.datetime.now()
-i = 0  # count iterations for runtime checks
+n = 0  # count iterations for runtime checks
 
 # Read in shapefile with country boundaries
-gdf_shape = gpd.GeoDataFrame.from_file('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
-                                       'world-administrative-boundaries/world-administrative-boundaries.shp')
+# gdf_shape = gpd.GeoDataFrame.from_file('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
+                                    #    'world-administrative-boundaries/world-administrative-boundaries.shp')
+
+gdf_shape = gpd.GeoDataFrame.from_file('./data/world-administrative-boundaries.shp')
 
 # read in country list of Europe
-europe = pd.read_csv('../../Documents/Master/Semester1/Visual_Analytics/Europe_2.csv')
+# europe = pd.read_csv('../../Documents/Master/Semester1/Visual_Analytics/Europe_2.csv')
+europe = pd.read_csv('./data/Europe_2.csv')
 
 # the following nested for loops read in all single files and perform the necessary data preprocessing on them
 # for memory limitation reasons, the datasets will be combined to a shared dataset later
-path = '../../Documents/Master/Semester1/Visual_Analytics/'
-path2 = 'Dashboard_Files/'
-# path = './data/performance/'
-# path2 = ''
+# path = '../../Documents/Master/Semester1/Visual_Analytics/'
+# path2 = 'Dashboard_Files/'
+path = './data/performance/'
 
 for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
     path_i = path + path2 + i[0]
@@ -58,7 +60,7 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             month = k[1]
             path_k = path_k + str(year)+"-"+month+"-01_performance_"+str(category)+"_tiles.parquet"
             df = pd.read_parquet(path_k, engine='pyarrow')
-            df = df.head()
+            # df = df.head()
 
             # add year, month and category information to the dataframe -
             # this information is only in file names, not in the files itself
@@ -77,26 +79,26 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             df = conduct_reverse_geocoding(df, gdf_shape)
 
             # save final dataframe as csv
-            df.to_csv(path + f'preprocessed_files/whole_world/whole_world_{i}.csv', sep=';')
+            df.to_csv(path + f'preprocessed_files/whole_world/whole_world_{n}.csv', sep=';')
 
             # filter for Europe:
-            europe = europe['Name'][:50].tolist()
+            # europe = europe['Name'][:50].tolist()
 
-            # ToDo: adjust the column name for country and check which countries aren't written the same way
+            # # ToDo: adjust the column name for country and check which countries aren't written the same way
 
-            unique_countries = df['country'].unique()
-            unique_countries = pd.Series(unique_countries)
-            unique_countries.to_csv(path + 'unique_country_list.csv')
+            # unique_countries = df['country'].unique()
+            # unique_countries = pd.Series(unique_countries)
+            # unique_countries.to_csv(path + 'unique_country_list.csv')
 
-            df_europe = df[df['country'].isin(europe)]
-            df_europe.to_csv(path + f'preprocessed_files/europe/europe_{i}.csv', sep=';')
+            df_europe = df[df['continent'] == 'Europe']
+            df_europe.to_csv(path + f'preprocessed_files/europe/europe_{n}.csv', sep=';')
 
             print("europe to csv after " + str(dt.datetime.now() - start))
 
             # filter for Germany
-            df_germany = df_europe[df_europe['country'] == 'Germany']
-            df_germany.to_csv(path + f'preprocessed_files/germany/germany_{i}.csv', sep=';')
+            df_germany = df_europe[df_europe['iso3'] == 'DEU']
+            df_germany.to_csv(path + f'preprocessed_files/germany/germany_{n}.csv', sep=';')
 
-            i += 1
-            print(str(i) + " Datasets processed in " + str(dt.datetime.now()-start))
+            n += 1
+            print(str(n) + " Datasets processed in " + str(dt.datetime.now()-start))
 print("Successful execution in " + str(dt.datetime.now()-start))
