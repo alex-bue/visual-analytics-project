@@ -37,7 +37,7 @@ gdf_shape = gpd.GeoDataFrame.from_file('./data/shapefiles/world-administrative-b
 # for memory limitation reasons, the datasets will be combined to a shared dataset later
 # path = '../../Documents/Master/Semester1/Visual_Analytics/'
 # path2 = 'Dashboard_Files/'
-path = './data/performance/'
+path = './data/aws_data/performance/'
 path2 = ''
 
 n = 0  # count iterations for runtime checks

@@ -6,7 +6,7 @@ start = dt.datetime.now()
 level = 'whole_world'
 
 # path = '../../Documents/Master/Semester1/Visual_Analytics/'
-path = './data/performance/'
+path = './data/aws_data/performance/'
 
 combined_df = pd.DataFrame()
 for i in range(0, 30):
@@ -17,6 +17,6 @@ for i in range(0, 30):
 
     combined_df = pd.concat([combined_df, df])
 
-combined_df.to_csv(f'.data/final_data/{level}_final.csv', sep=',')
+combined_df.to_csv(f'./data/final_data/{level}_final.csv', sep=',')
 
 print("Successful execution in " + str(dt.datetime.now()-start))

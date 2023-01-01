@@ -9,7 +9,7 @@ import datetime as dt
 # Extracting Path and Building DataFrame
 
 # read in all single files and concatenate them
-path = './data/performance/'
+path = './data/aws_data/performance/'
 df_complete = pd.DataFrame()
 for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
     path_i = path + i[0]
