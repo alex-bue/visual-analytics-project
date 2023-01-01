@@ -26,17 +26,12 @@ def conduct_reverse_geocoding(df: pd.DataFrame, gdf_shape):
 
 
 start = dt.datetime.now()
-n = 0  # count iterations for runtime checks
 
 # Read in shapefile with country boundaries
 # gdf_shape = gpd.GeoDataFrame.from_file('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
                                     #    'world-administrative-boundaries/world-administrative-boundaries.shp')
 
-gdf_shape = gpd.GeoDataFrame.from_file('./data/world-administrative-boundaries.shp')
-
-# read in country list of Europe
-# europe = pd.read_csv('../../Documents/Master/Semester1/Visual_Analytics/Europe_2.csv')
-europe = pd.read_csv('./data/Europe_2.csv')
+gdf_shape = gpd.GeoDataFrame.from_file('./data/shapefiles/world-administrative-boundaries.shp')
 
 # the following nested for loops read in all single files and perform the necessary data preprocessing on them
 # for memory limitation reasons, the datasets will be combined to a shared dataset later
@@ -44,6 +39,8 @@ europe = pd.read_csv('./data/Europe_2.csv')
 # path2 = 'Dashboard_Files/'
 path = './data/performance/'
 path2 = ''
+
+n = 0  # count iterations for runtime checks
 
 for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
     path_i = path + path2 + i[0]
@@ -80,25 +77,17 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             df = conduct_reverse_geocoding(df, gdf_shape)
 
             # save final dataframe as csv
-            df.to_csv(path + f'preprocessed_files/whole_world/whole_world_{n}.csv', sep=';')
+            df.to_csv(f'./data/preprocessed_files/whole_world/whole_world_{n}.csv', sep=',')
 
-            # filter for Europe:
-            # europe = europe['Name'][:50].tolist()
-
-            # # ToDo: adjust the column name for country and check which countries aren't written the same way
-
-            # unique_countries = df['country'].unique()
-            # unique_countries = pd.Series(unique_countries)
-            # unique_countries.to_csv(path + 'unique_country_list.csv')
-
+            # filter for europe
             df_europe = df[df['continent'] == 'Europe']
-            df_europe.to_csv(path + f'preprocessed_files/europe/europe_{n}.csv', sep=';')
+            df_europe.to_csv(f'./data/preprocessed_files/europe/europe_{n}.csv', sep=',')
 
             print("europe to csv after " + str(dt.datetime.now() - start))
 
             # filter for Germany
             df_germany = df_europe[df_europe['iso3'] == 'DEU']
-            df_germany.to_csv(path + f'preprocessed_files/germany/germany_{n}.csv', sep=';')
+            df_germany.to_csv(f'./data/preprocessed_files/germany/germany_{n}.csv', sep=',')
 
             n += 1
             print(str(n) + " Datasets processed in " + str(dt.datetime.now()-start))

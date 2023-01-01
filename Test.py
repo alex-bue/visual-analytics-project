@@ -5,12 +5,7 @@ from shapely import Point, Polygon, MultiPolygon
 # from geopy.geocoders import Nominatim
 # from geopy.point import Point
 import datetime as dt
-#%%
-# Test
-shapefile = gpd.read_file('/Users/alexander.buescher/Downloads/2022-01-01_performance_fixed_tiles/gps_fixed_tiles.shp', rows=5)
 
-shapefile
-#%%
 # Extracting Path and Building DataFrame
 
 # read in all single files and concatenate them
@@ -62,7 +57,7 @@ gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.long, df.lat))
 gdf.head()
 #%%
 # Reading shapefile with country boundaries
-gdf_shape = gpd.GeoDataFrame.from_file('./data/world-administrative-boundaries.shp')
+gdf_shape = gpd.GeoDataFrame.from_file('./data/shapefiles/world-administrative-boundaries.shp')
 #%%
 # Merge DataFrames
 pointInPolys = gpd.sjoin(gdf, gdf_shape, how='left')
@@ -82,6 +77,3 @@ print(pointInPolys['iso3'].isna().sum())
 
 pointInPolys[pointInPolys.isnull().any(axis=1)]
 #%%
-# Realizing my mistakes (cry)
-for col in pointInPolys:
-    print(pointInPolys['quarter'].unique())
