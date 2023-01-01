@@ -50,7 +50,7 @@ print(df.shape)
 df.head()
 #%%
 # Save to CSV as intemediary version
-df.to_csv('dataset-without-regions.csv')
+df.to_csv('./data/preprocessed_files/dataset-without-regions.csv', sep=',')
 #%%
 # Convert to GeoDataFrame
 gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.long, df.lat))
