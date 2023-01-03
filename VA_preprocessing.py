@@ -77,17 +77,17 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             df = conduct_reverse_geocoding(df, gdf_shape)
 
             # save final dataframe as csv
-            df.to_csv(f'./data/preprocessed_files/whole_world/whole_world_{n}.csv', sep=',')
+            df.to_csv(f'./data/preprocessed_files/whole_world/whole_world_{n}.csv', sep=';')
 
             # filter for europe
             df_europe = df[df['continent'] == 'Europe']
-            df_europe.to_csv(f'./data/preprocessed_files/europe/europe_{n}.csv', sep=',')
+            df_europe.to_csv(f'./data/preprocessed_files/europe/europe_{n}.csv', sep=';')
 
             print("europe to csv after " + str(dt.datetime.now() - start))
 
             # filter for Germany
             df_germany = df_europe[df_europe['iso3'] == 'DEU']
-            df_germany.to_csv(f'./data/preprocessed_files/germany/germany_{n}.csv', sep=',')
+            df_germany.to_csv(f'./data/preprocessed_files/germany/germany_{n}.csv', sep=';')
 
             n += 1
             print(str(n) + " Datasets processed in " + str(dt.datetime.now()-start))

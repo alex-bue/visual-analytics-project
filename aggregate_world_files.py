@@ -44,11 +44,11 @@ for i in range(0,30):
     df_agg.drop(columns=['avg_d_kbps', 'avg_u_kbps'], inplace=True)
 
     # Convert columns to int16 to save space
-    df_agg['avg_d_mbps'] = df_agg['avg_d_mbps'].astype('int16')
-    df_agg['avg_u_mbps'] = df_agg['avg_u_mbps'].astype('int16')
-    df_agg['avg_lat_ms'] = df_agg['avg_lat_ms'].astype('int16')
-    # df_agg['tests'] = df_agg['tests'].astype('int16')
-    df_agg['devices'] = df_agg['devices'].astype('int16')
+    df_agg['avg_d_mbps'] = df_agg['avg_d_mbps'].astype('int64')
+    df_agg['avg_u_mbps'] = df_agg['avg_u_mbps'].astype('int64')
+    df_agg['avg_lat_ms'] = df_agg['avg_lat_ms'].astype('int64')
+    df_agg['tests'] = df_agg['tests'].astype('int64')
+    df_agg['devices'] = df_agg['devices'].astype('int64')
     # df_agg['country'] = df_agg['country'].astype('string')
     # df_agg['category'] = df_agg['category'].astype('category')
 
