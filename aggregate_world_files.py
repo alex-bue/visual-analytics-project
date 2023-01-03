@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 # defining which columns we need to use when loading the data to save some memory
-req_cols = ['avg_d_kbps', 'avg_u_kbps', 'avg_lat_ms', 'tests', 'devices', 'quarter', 'category', 'iso3', 'name']
+req_cols = ['avg_d_kbps', 'avg_u_kbps', 'avg_lat_ms', 'tests', 'devices', 'quarter', 'category', 'name', 'geometry']
 
 # Create empty dataframe that will be used for concatenating the different aggregated dataframes
 df_world = pd.DataFrame()
@@ -38,6 +38,18 @@ for i in range(0,30):
     # add cols for mbps
     df_agg['avg_d_mbps'] = df_agg['avg_d_kbps'] / 1000
     df_agg['avg_u_mbps'] = df_agg['avg_u_kbps'] / 1000
+
+    # drop kbps cols
+    df_agg.drop(columns=['avg_d_kbps', 'avg_u_kbps'], inplace=True)
+
+    # Convert columns to int16 to save space
+    df_agg['avg_d_mbps'] = df_agg['avg_d_mbps'].astype('int16')
+    df_agg['avg_u_mbps'] = df_agg['avg_u_mbps'].astype('int16')
+    df_agg['avg_lat_ms'] = df_agg['avg_lat_ms'].astype('int16')
+    df_agg['tests'] = df_agg['tests'].astype('int16')
+    # df_agg['devices'] = df_agg['devices'].astype('int16')
+    # df_agg['country'] = df_agg['country'].astype('string')
+    # df_agg['category'] = df_agg['category'].astype('category')
 
     # Concat together
     df_world = pd.concat([df_world, df_agg])
