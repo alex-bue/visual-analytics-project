@@ -17,20 +17,21 @@ for i in range(0,30):
 
     # aggregate as weighted average
     # create helper columns for weighted averages
-    df['product1'] = df['avg_d_kbps'] * df['tests']
-    df['product2'] = df['avg_u_kbps'] * df['tests']
-    df['product3'] = df['avg_lat_ms'] * df['tests']
+    df['product1'] = df['avg_d_kbps'] * df['devices']
+    df['product2'] = df['avg_u_kbps'] * df['devices']
+    df['product3'] = df['avg_lat_ms'] * df['devices']
 
     # Aggregate
     df_agg = df.groupby(['country', 'quarter', 'category']).agg({'product1': sum,
                                                               'product2': sum,
                                                               'product3': sum,
+                                                              'devices': sum,
                                                               'tests': sum})
     
     # retrieve actual values from product columns
-    df_agg['avg_d_kbps'] = df_agg['product1'] / df_agg['tests']
-    df_agg['avg_u_kbps'] = df_agg['product2'] / df_agg['tests']
-    df_agg['avg_lat_ms'] = df_agg['product3'] / df_agg['tests']
+    df_agg['avg_d_kbps'] = df_agg['product1'] / df_agg['devices']
+    df_agg['avg_u_kbps'] = df_agg['product2'] / df_agg['devices']
+    df_agg['avg_lat_ms'] = df_agg['product3'] / df_agg['devices']
 
     # drop helper columns
     df_agg = df_agg.drop(columns=['product1', 'product2', 'product3'])
@@ -46,8 +47,8 @@ for i in range(0,30):
     df_agg['avg_d_mbps'] = df_agg['avg_d_mbps'].astype('int16')
     df_agg['avg_u_mbps'] = df_agg['avg_u_mbps'].astype('int16')
     df_agg['avg_lat_ms'] = df_agg['avg_lat_ms'].astype('int16')
-    df_agg['tests'] = df_agg['tests'].astype('int16')
-    # df_agg['devices'] = df_agg['devices'].astype('int16')
+    # df_agg['tests'] = df_agg['tests'].astype('int16')
+    df_agg['devices'] = df_agg['devices'].astype('int16')
     # df_agg['country'] = df_agg['country'].astype('string')
     # df_agg['category'] = df_agg['category'].astype('category')
 
@@ -55,4 +56,6 @@ for i in range(0,30):
     df_world = pd.concat([df_world, df_agg])
 
 # save to csv
-df_world.to_csv('./data/final_data/world_aggregated.csv', sep=',')
+df_world.to_csv('./data/final_data/world_aggregated_final.csv', sep=';')
+
+df_world.to_excel('./data/final_data/world_aggregated_final.xlsx', sheet_name='world_aggregated_final')
