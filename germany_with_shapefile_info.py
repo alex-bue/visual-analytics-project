@@ -21,9 +21,11 @@ def conduct_reverse_geocoding(df: pd.DataFrame, gdf_shape):
     return pointInPolys
 
 
-shapefile = gpd.GeoDataFrame.from_file("../../Documents/Master/Semester1/Visual_Analytics/"
-                                       "G-2020-AI001-2-5--AI0109--2023-01-03/G-2020-AI001-2-5--AI0109--2023-01-03.shp")
+shapefile = gpd.GeoDataFrame.from_file("./data/shapefiles/germany/G-2020-AI001-2-5--AI0109--2023-01-03.shp")
 
-df_germany = pd.read_csv("../../Documents/Master/Semester1/Visual_Analytics/Data_Input_final/germany_final_2.csv")
+df_germany = pd.read_csv("./data/final_data/germany_final.csv", sep=";")
 
 df_germany = conduct_reverse_geocoding(df_germany, shapefile)
+
+print(df_germany.head())
+print(df_germany.columns())
