@@ -15,30 +15,18 @@ for i in range(0,30):
     # rename country col
     df.rename(columns={'name':'country'}, inplace=True)
 
-    # aggregate as weighted average
-    # create helper columns for weighted averages
-    df['product1'] = df['avg_d_kbps'] * df['devices']
-    df['product2'] = df['avg_u_kbps'] * df['devices']
-    df['product3'] = df['avg_lat_ms'] * df['devices']
+    # calculate average values per country-quarter-category combination
 
-    # add additional column with ones and take sum in groupby
+    # add additional column with ones and take sum in groupby - a row count is necessary later for weighted averaging
     df['row_count'] = 1
 
     # Aggregate
-    df_agg = df.groupby(['country', 'quarter', 'category']).agg({'product1': sum,
-                                                              'product2': sum,
-                                                              'product3': sum,
-                                                              'devices': sum,
-                                                              'tests': sum,
-                                                              'row_count': sum})
-    
-    # retrieve actual values from product columns
-    df_agg['avg_d_kbps'] = df_agg['product1'] / df_agg['devices']
-    df_agg['avg_u_kbps'] = df_agg['product2'] / df_agg['devices']
-    df_agg['avg_lat_ms'] = df_agg['product3'] / df_agg['devices']
-
-    # drop helper columns
-    df_agg = df_agg.drop(columns=['product1', 'product2', 'product3'])
+    df_agg = df.groupby(['country', 'quarter', 'category']).agg({'devices': sum,
+                                                                 'tests': sum,
+                                                                 'row_count': sum,
+                                                                 'avg_d_kbps': np.average,
+                                                                 'avg_u_kbps': np.average,
+                                                                 'avg_lat_ms': np.average})
 
     # add cols for mbps
     df_agg['avg_d_mbps'] = df_agg['avg_d_kbps'] / 1000
@@ -61,6 +49,4 @@ for i in range(0,30):
     df_world = pd.concat([df_world, df_agg])
 
 # save to csv
-df_world.to_csv('./data/final_data/world_aggregated_final.csv', sep=';')
-
-df_world.to_excel('./data/final_data/world_aggregated_final.xlsx', sheet_name='world_aggregated_final')
+df_world.to_csv('./data/final_data/world_aggregated.csv', sep=';')
