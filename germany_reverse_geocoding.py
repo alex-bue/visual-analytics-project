@@ -74,5 +74,5 @@ df_germany.drop(columns=["Unnamed: 0", "long", "lat", "geometry"], inplace=True)
 df_germany.rename(columns={"gen_left":"federal_state", "gen_right":"county", "gen":"municipality"}, inplace=True)
 
 # save as csv
-df_germany.to_csv("./data/final_data/germany_final.csv", sep=";")
+df_germany.to_csv("./data/final_data/germany_final.csv", sep=";", index=False)
 
