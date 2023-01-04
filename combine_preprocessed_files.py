@@ -15,7 +15,9 @@ for i in range(0, 30):
 
     combined_df = pd.concat([combined_df, df])
 
-combined_df.to_csv(f'./data/final_data/{level}_combined.csv', sep=';')
+combined_df.drop(columns=['Unnamed: 0'], inplace=True)
+
+combined_df.to_csv(f'./data/final_data/{level}_combined.csv', sep=';', index=False)
 
 # End timer
 print("Successful execution in " + str(dt.datetime.now()-start))

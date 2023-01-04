@@ -21,12 +21,16 @@ for i in range(0,30):
     df['product2'] = df['avg_u_kbps'] * df['devices']
     df['product3'] = df['avg_lat_ms'] * df['devices']
 
+    # add additional column with ones and take sum in groupby
+    df['row_count'] = 1
+
     # Aggregate
     df_agg = df.groupby(['country', 'quarter', 'category']).agg({'product1': sum,
                                                               'product2': sum,
                                                               'product3': sum,
                                                               'devices': sum,
-                                                              'tests': sum})
+                                                              'tests': sum,
+                                                              'row_count': sum})
     
     # retrieve actual values from product columns
     df_agg['avg_d_kbps'] = df_agg['product1'] / df_agg['devices']
@@ -49,6 +53,7 @@ for i in range(0,30):
     df_agg['avg_lat_ms'] = df_agg['avg_lat_ms'].astype('int64')
     df_agg['tests'] = df_agg['tests'].astype('int64')
     df_agg['devices'] = df_agg['devices'].astype('int64')
+    df_agg['row_count'] = df_agg['row_count'].astype('int64')
     # df_agg['country'] = df_agg['country'].astype('string')
     # df_agg['category'] = df_agg['category'].astype('category')
 

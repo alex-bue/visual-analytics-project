@@ -68,7 +68,7 @@ df_germany.drop(columns=
 ], inplace=True)
 
 # clean other unecessary columns
-df_germany.drop(columns=["Unnamed: 0", "long", "lat", "geometry"], inplace=True)
+df_germany.drop(columns=["long", "lat", "geometry"], inplace=True)
 
 # rename newly added features for better readability
 df_germany.rename(columns={"gen_left":"federal_state", "gen_right":"county", "gen":"municipality"}, inplace=True)

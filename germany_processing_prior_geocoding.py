@@ -32,4 +32,4 @@ df_germany['country'] = df_germany['country'].astype('string')
 df_germany['category'] = df_germany['category'].astype('category')
 
 # save as comma separated csv
-df_germany.to_csv('./data/final_data/germany_pre_geocoding.csv', sep=';')
+df_germany.to_csv('./data/final_data/germany_pre_geocoding.csv', sep=';', index=False)
