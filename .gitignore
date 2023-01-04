@@ -1,13 +1,4 @@
 .DS_Store
 *.csv
 *.xlsx
-*.sbx 
-*.shp 
-*.prj	
-*.shp.xml 
-*.shx
 *.parquet
-*.cpg
-*.prj
-*.dbf
-*.sbn

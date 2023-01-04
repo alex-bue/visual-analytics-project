@@ -1,0 +1,14 @@
+<metadata xml:lang="de">
+	<Esri>
+		<CreaDate>20230103</CreaDate>
+		<CreaTime>22420000</CreaTime>
+		<ArcGISFormat>1.0</ArcGISFormat>
+		<SyncOnce>TRUE</SyncOnce>
+		<DataProperties>
+			<lineage>
+				<Process ToolSource="z:\data\software\arcgis\server\framework\runtime\arcgis\Resources\ArcToolbox\toolboxes\Conversion Tools.tbx\JSONToFeatures" Date="20230103" Time="224200">JSONToFeatures Z:\data\arcgis\directories\arcgisjobs\utilities_itnrw\featureset2geodatascript_gpserver\j8b5e977e4f45421d9062c485faabeb4b\scratch\K-2020-AI001-2-5--AI0106--2023-01-03.json Z:\data\arcgis\directories\arcgisjobs\utilities_itnrw\featureset2geodatascript_gpserver\j8b5e977e4f45421d9062c485faabeb4b\scratch\K-2020-AI001-2-5--AI0106--2023-01-03.shp Polygon</Process>
+				<Process ToolSource="z:\data\software\arcgis\server\framework\runtime\arcgis\Resources\ArcToolbox\toolboxes\Data Management Tools.tbx\RepairGeometry" Date="20230103" Time="224204">RepairGeometry Z:\data\arcgis\directories\arcgisjobs\utilities_itnrw\featureset2geodatascript_gpserver\j8b5e977e4f45421d9062c485faabeb4b\scratch\K-2020-AI001-2-5--AI0106--2023-01-03.shp KEEP_NULL Esri</Process>
+			</lineage>
+		</DataProperties>
+	</Esri>
+</metadata>
