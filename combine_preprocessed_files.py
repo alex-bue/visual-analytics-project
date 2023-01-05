@@ -5,7 +5,7 @@ import datetime as dt
 # Start timer
 start = dt.datetime.now()
 
-# choose whole_world, europe or germany
+# choose germany or whole_world 
 level = 'germany'
 
 # combine 30 individual csv files from prior preprocessing into one csv for each Germany, Europe and whole world
