@@ -28,7 +28,7 @@ sf_municipalities = gpd.GeoDataFrame.from_file("./data/shapefiles/germany/munici
 # load germany data as df
 df_germany = pd.read_csv("./data/final_data/germany_pre_geocoding.csv", sep=";")
 
-# convert CRS of shapefiles to fit CRS of CRS in Germany file (EPSG)
+# convert CRS of shapefiles to fit CRS in Germany file (EPSG:25832 to EPSG:4326)
 sf_federal_states = sf_federal_states.to_crs(4326)
 sf_counties = sf_counties.to_crs(4326)
 sf_municipalities = sf_municipalities.to_crs(4326)
@@ -66,6 +66,9 @@ df_germany.drop(columns=
 "schluessel",
 "ai0106"
 ], inplace=True)
+
+# drop NAs
+df_germany = df_germany.dropna()
 
 # clean other unecessary columns
 df_germany.drop(columns=["long", "lat", "geometry"], inplace=True)
