@@ -22,7 +22,7 @@ df_germany['avg_u_mbps'] = df_germany['avg_u_mbps'].round(0).astype(int)
 # Drop kbps columns
 df_germany.drop(columns=['avg_d_kbps', 'avg_u_kbps'], inplace=True)
 
-# Convert columns to int16 to save space
+# Convert columns to int64 to save space
 df_germany['avg_d_mbps'] = df_germany['avg_d_mbps'].astype('int64')
 df_germany['avg_u_mbps'] = df_germany['avg_u_mbps'].astype('int64')
 df_germany['avg_lat_ms'] = df_germany['avg_lat_ms'].astype('int64')
