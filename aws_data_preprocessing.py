@@ -2,7 +2,7 @@ import pandas as pd
 import geopandas as gpd
 import datetime as dt
 
-
+# function to perform reverse geocoding
 def conduct_reverse_geocoding(df: pd.DataFrame, gdf_shape):
     """
     enriches the dataframe with the countries the long-lat data points are located in
@@ -25,15 +25,10 @@ def conduct_reverse_geocoding(df: pd.DataFrame, gdf_shape):
 start = dt.datetime.now()
 
 # Read in shapefile with country boundaries
-# gdf_shape = gpd.GeoDataFrame.from_file('../../Documents/Master/Semester1/Visual_Analytics/Dashboard_Files/'
-                                    #    'world-administrative-boundaries/world-administrative-boundaries.shp')
-
 gdf_shape = gpd.GeoDataFrame.from_file('./data/shapefiles/world/world-administrative-boundaries.shp')
 
 # the following nested for loops read in all single files and perform the necessary data preprocessing on them
 # for memory limitation reasons, the datasets will be combined to a shared dataset later
-# path = '../../Documents/Master/Semester1/Visual_Analytics/'
-# path2 = 'Dashboard_Files/'
 path = './data/aws_data/performance/'
 path2 = ''
 
@@ -55,7 +50,6 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             month = k[1]
             path_k = path_k + str(year)+"-"+month+"-01_performance_"+str(category)+"_tiles.parquet"
             df = pd.read_parquet(path_k, engine='pyarrow')
-            # df = df.head()
 
             # add year, month and category information to the dataframe -
             # this information is only in file names, not in the files itself
@@ -78,14 +72,8 @@ for i in [["type=fixed/", "fixed"], ["type=mobile/", "mobile"]]:
             # save final dataframe as csv
             df.to_csv(f'./data/preprocessed_files/whole_world/whole_world_{n}.csv', sep=';')
 
-            # filter for europe
-            df_europe = df[df['continent'] == 'Europe']
-            df_europe.to_csv(f'./data/preprocessed_files/europe/europe_{n}.csv', sep=';')
-
-            print("europe to csv after " + str(dt.datetime.now() - start))
-
             # filter for Germany
-            df_germany = df_europe[df_europe['iso3'] == 'DEU']
+            df_germany = df[df['iso3'] == 'DEU']
             df_germany.to_csv(f'./data/preprocessed_files/germany/germany_{n}.csv', sep=';')
 
             n += 1
