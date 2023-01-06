@@ -19,9 +19,11 @@ def combine_files(level):
     # Save csv file
     combined_df.to_csv(f'./data/final_data/{level}_combined.csv', sep=';', index=False)
 
-# Run function for whole world and germany
-combine_files('whole_world')
+# Call function for germany
 combine_files('germany')
+
+# Same for whole world (commented out by default because script runs very long with it)
+# combine_files('whole_world')
 
 # End timer
 print("Successful execution in " + str(dt.datetime.now()-start))
